@@ -22,6 +22,24 @@ jobs:
       - name: 安装依赖
         run: pip install -r crawler/requirements.txt
 
+      - name: 恢复既有数据库（data 分支）
+        run: |
+          mkdir -p crawler/data
+          curl -sfL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/data/muniao.db" -o crawler/data/muniao.db \
+            && echo "已恢复云端历史库" || echo "首次运行，暂无历史库（将先跑发现层建库）"
+
+      - name: 空库时先跑发现层建底册
+        env:
+          TZ: Asia/Shanghai
+        run: |
+          COUNT=$(python -c "import sqlite3,os; p='crawler/data/muniao.db'; print(sqlite3.connect(p).execute('SELECT COUNT(*) FROM listing_base').fetchone()[0] if os.path.exists(p) else 0)" 2>/dev/null || echo 0)
+          if [ "$COUNT" = "0" ]; then
+            echo "底册为空，先跑发现层"
+            python crawler/run_discover.py
+          else
+            echo "底册已有 $COUNT 间房源，跳过发现层"
+          fi
+
       - name: 运行每日快照（价格 + 口碑关键词分析）
         env:
           TZ: Asia/Shanghai # 快照日期按北京时间记录
@@ -31,11 +49,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp crawler/data/muniao.db /tmp/muniao_snapshot.db
           git checkout --orphan data 2>/dev/null || git checkout data
           git rm -rf . 2>/dev/null || true
-          mkdir -p data
-          cp crawler/data/muniao.db data/muniao.db
-          git add data/muniao.db
+          cp /tmp/muniao_snapshot.db muniao.db
+          git add muniao.db
           git commit -m "snapshot $(TZ=Asia/Shanghai date +%F)" || echo "数据无变化"
           git push -f origin data
 

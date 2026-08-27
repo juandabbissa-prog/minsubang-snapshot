@@ -18,7 +18,7 @@ import sys
 import urllib.request
 from datetime import date
 
-RAW_URL = "https://raw.githubusercontent.com/juandabbissa-prog/ZXT/data/muniao.db"
+RAW_URL = "https://raw.githubusercontent.com/juandabbissa-prog/minsubang-snapshot/data/muniao.db"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOCAL_DB = os.path.join(
     BASE_DIR, "资料库", "04_开发交付", "M1_数据采集器", "crawler", "data", "muniao.db"
