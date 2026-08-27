@@ -1,5 +1,8 @@
 name: daily-snapshot
 
+permissions:
+  contents: write # 回传数据到 data 分支需要写权限
+
 on:
   schedule:
     # UTC 21:47 = 北京时间 05:47，每日自动采集（避开整点/半点拥堵）
