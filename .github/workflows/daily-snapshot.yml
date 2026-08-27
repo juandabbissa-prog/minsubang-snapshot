@@ -1,0 +1,47 @@
+name: daily-snapshot
+
+on:
+  schedule:
+    # UTC 21:47 = 北京时间 05:47，每日自动采集（避开整点/半点拥堵）
+    - cron: "47 21 * * *"
+  workflow_dispatch: # 支持网页手动触发（Actions → daily-snapshot → Run workflow）
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install -r crawler/requirements.txt
+
+      - name: 运行每日快照（价格 + 口碑关键词分析）
+        env:
+          TZ: Asia/Shanghai # 快照日期按北京时间记录
+        run: python crawler/daily_snapshot.py
+
+      - name: 回传数据到 data 分支（force-push 保持仓库不膨胀）
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan data 2>/dev/null || git checkout data
+          git rm -rf . 2>/dev/null || true
+          mkdir -p data
+          cp crawler/data/muniao.db data/muniao.db
+          git add data/muniao.db
+          git commit -m "snapshot $(TZ=Asia/Shanghai date +%F)" || echo "数据无变化"
+          git push -f origin data
+
+      - name: 失败时上传运行日志
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawler-logs
+          path: crawler/logs/

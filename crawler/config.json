@@ -1,0 +1,21 @@
+{
+  "platform": "muniao",
+  "city": "dalian",
+  "base_url": "https://www.muniao.com",
+  "list_page1": "https://www.muniao.com/dalian/?tn=mn19091015",
+  "list_page_n": "https://www.muniao.com/dalian/null-0-0-0-0-0-0-0-{page}.html?start_date={d1}&end_date={d2}&tn=mn19091015",
+  "detail_url": "https://www.muniao.com/room/{room_id}.html",
+  "robots_url": "https://www.muniao.com/robots.txt",
+  "robots_watch_paths": ["/dalian/", "/room/"],
+  "date_rule": "tomorrow_and_day_after",
+  "max_pages": 30,
+  "stop_after_empty_pages": 2,
+  "ua": "满房帮爬虫/1.0",
+  "coord_system": "unverified",
+  "db_path": "data/muniao.db",
+  "log_dir": "logs",
+  "state_path": "data/state.json",
+  "alert_drop_pct": 30,
+  "alert_fail_rate_pct": 5,
+  "track_timeout_hours": 3
+}
