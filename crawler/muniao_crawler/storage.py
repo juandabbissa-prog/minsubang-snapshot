@@ -42,16 +42,85 @@ class Storage:
         os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
         self.conn = sqlite3.connect(db_path)
         self.conn.executescript(SCHEMA)
+        self._ensure_columns()
         self.conn.commit()
 
-    def upsert_listing(self, platform, ref, first_seen=None, last_seen=None):
+    def _ensure_columns(self):
+        """M2-变更-004 增量列：listing_base 加 facility_count / room_capacity /
+        open_year / renovate_year。
+        幂等：已存在则 ALTER 报错即跳过，不破坏既有库与旧代码读取。
+        open_year / renovate_year 暂无可采数据源（2026-08-28 实测：高德
+        place/detail biz_ext.open_time 对住宿类 POI 10/10 返回空；木鸟页面
+        无结构化开业/装修年份字段），先留列位，有源即写。"""
+        for col in ("facility_count INTEGER", "room_capacity INTEGER",
+                    "open_year INTEGER", "renovate_year INTEGER",
+                    "host_id TEXT", "host_listing_count INTEGER"):
+            try:
+                self.conn.execute(f"ALTER TABLE listing_base ADD COLUMN {col}")
+            except sqlite3.OperationalError:
+                pass  # duplicate column name：已存在
+
+    def upsert_listing(self, platform, ref, first_seen=None, last_seen=None,
+                       room_capacity=None):
         today = date.today().isoformat()
         self.conn.execute(
-            """INSERT INTO listing_base(platform, listing_ref, first_seen, last_seen)
-               VALUES(?,?,?,?)
+            """INSERT INTO listing_base(platform, listing_ref, first_seen, last_seen,
+                       room_capacity)
+               VALUES(?,?,?,?,?)
                ON CONFLICT(platform, listing_ref)
-               DO UPDATE SET last_seen=excluded.last_seen""",
-            (platform, ref, first_seen or today, last_seen or today))
+               DO UPDATE SET last_seen=excluded.last_seen,
+                   room_capacity=COALESCE(excluded.room_capacity,
+                                          listing_base.room_capacity)""",
+            (platform, ref, first_seen or today, last_seen or today, room_capacity))
+
+    def update_listing_metrics(self, platform, ref, facility_count=None,
+                               room_capacity=None):
+        """M2-变更-004：详情页设施标签数 / 列表页宜住人数回写底册（只填非 None）。"""
+        if facility_count is not None:
+            self.conn.execute(
+                """UPDATE listing_base SET facility_count=?
+                   WHERE platform=? AND listing_ref=?""",
+                (facility_count, platform, ref))
+        if room_capacity is not None:
+            self.conn.execute(
+                """UPDATE listing_base SET room_capacity=?
+                   WHERE platform=? AND listing_ref=?""",
+                (room_capacity, platform, ref))
+
+    def update_listing_host(self, platform, ref, host_id=None,
+                            host_listing_count=None):
+        """体量维（M2-变更-004 补充）：房东 ID / 房东挂牌套数回写底册。"""
+        if host_id is not None:
+            self.conn.execute(
+                """UPDATE listing_base SET host_id=?
+                   WHERE platform=? AND listing_ref=?""",
+                (host_id, platform, ref))
+        if host_listing_count is not None:
+            self.conn.execute(
+                """UPDATE listing_base SET host_listing_count=?
+                   WHERE platform=? AND listing_ref=?""",
+                (host_listing_count, platform, ref))
+
+    def listings_missing_host(self, platform):
+        """缺房东 ID 的活跃房源（host_id 补采清单）。"""
+        return [r[0] for r in self.conn.execute(
+            "SELECT listing_ref FROM listing_base WHERE platform=? AND host_id IS NULL",
+            (platform,))]
+
+    def hosts_missing_count(self, platform):
+        """缺套数的房东 ID 清单（去重）。"""
+        return [r[0] for r in self.conn.execute(
+            """SELECT DISTINCT host_id FROM listing_base
+               WHERE platform=? AND host_id IS NOT NULL
+                 AND host_listing_count IS NULL""",
+            (platform,))]
+
+    def update_host_count(self, platform, host_id, count):
+        """按房东 ID 批量回写套数（该房东名下全部房源一次到位）。"""
+        self.conn.execute(
+            """UPDATE listing_base SET host_listing_count=?
+               WHERE platform=? AND host_id=?""",
+            (count, platform, host_id))
 
     def update_listing_profile(self, platform, ref, name, address, lng, lat,
                                region_code=None):

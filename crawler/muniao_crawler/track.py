@@ -39,6 +39,13 @@ def run(client, store, cfg, alert_cb, limit=None, only_refs=None):
                 store.update_listing_profile(cfg["platform"], rid, rec["name"],
                                              rec["address"], rec["lng"], rec["lat"],
                                              rec.get("region_code"))
+            if rec.get("facility_count") is not None or rec.get("capacity") is not None:
+                store.update_listing_metrics(cfg["platform"], rid,
+                                             facility_count=rec.get("facility_count"),
+                                             room_capacity=rec.get("capacity"))
+            if rec.get("host_id"):
+                store.update_listing_host(cfg["platform"], rid,
+                                          host_id=rec["host_id"])
             ok += 1
         else:
             fail += 1
