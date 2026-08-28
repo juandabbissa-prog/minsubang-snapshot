@@ -17,6 +17,7 @@ MARKER = os.path.join(LOGS_DIR, f"snapshot_done_{date.today().isoformat()}")
 
 sys.path.insert(0, BASE_DIR)
 from muniao_crawler import bootstrap, reviews, track  # noqa: E402
+import run_hosts  # noqa: E402  采集器根目录脚本（房东体量补齐）
 
 
 def already_done() -> bool:
@@ -70,6 +71,20 @@ def main() -> None:
         rresult = None
     finally:
         store2.close()
+
+    # 房东体量补齐（M2-变更-004 补充）：只采缺口——host_id 缺失的房源 +
+    # 套数缺失的房东主页；稳态下每日 0 额外请求，新店入池自动补齐。
+    # 独立成败，不影响价格快照标记
+    print("RUN: 开始房东体量补齐……")
+    cfg3, client3, store3, alert_cb3 = bootstrap.setup(BASE_DIR)
+    try:
+        hresult = run_hosts.run(client3, store3, cfg3, alert_cb3)
+        print("HOSTS:", hresult)
+    except Exception as exc:
+        print(f"WARN: 房东体量补齐失败（不影响价格快照）: {type(exc).__name__}")
+        hresult = None
+    finally:
+        store3.close()
 
     if price_ok:
         return
