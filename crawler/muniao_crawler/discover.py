@@ -30,12 +30,14 @@ def run(client, store, cfg, max_pages=None, alert_cb=None):
         if code != 200:
             empty_streak += 1
         else:
-            ids = parse.parse_list_page(html)
+            cards = parse.parse_list_cards(html)
+            ids = [c["listing_ref"] for c in cards]
             new = [i for i in ids if i not in seen]
             log.info("第%d页: ids=%d new=%d", n, len(ids), len(new))
-            for rid in ids:
-                seen.add(rid)
-                store.upsert_listing(cfg["platform"], rid)
+            for c in cards:
+                seen.add(c["listing_ref"])
+                store.upsert_listing(cfg["platform"], c["listing_ref"],
+                                     room_capacity=c.get("capacity"))
             store.commit()
             empty_streak = 0 if new else empty_streak + 1
         pages_done = n
