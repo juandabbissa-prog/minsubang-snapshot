@@ -18,6 +18,11 @@
   python m12_principle_check.py --phase report            # 出 matrix.csv + 核对清单
   python m12_principle_check.py --phase verdict           # 出验证报告（需人工 ground_truth.csv）
 
+云端运行（A/B 迁云端轨，2026-09-02 起）：GitHub Actions workflow 手动触发，
+请求间隔由环境变量 REQUEST_INTERVAL 控制（云端 7 秒，宁慢勿封）；
+单轮请求预算 85 硬闸、≥3 窗口整窗失败自动中止剩余窗口；
+RESULT 汇总行走 stdout（Actions 日志可见），窗口 JSON 以 artifacts 回收。
+
 合规说明：全程复用既有 HttpClient（实名 UA + 间隔自律 + 失败重试），
 不修改任何既有采集文件；a/b 每轮启动时执行 robots 核查并留档；
 单页请求失败（非 200 / 异常）记失败页、不算空页；已存在的轮次文件自动跳过（断点续跑）。
@@ -50,6 +55,8 @@ SAMPLE_SIZE = 24            # 多取 4 家防废号
 MIN_INTERVAL_MIN = 20       # 两轮独立检索最小间隔（分钟）
 PASS_MATCH_RATE = 0.85      # 整体吻合率通过线
 PASS_FALSE_POSITIVE = 0.10  # 「实际可订却判不可订」假阳性率通过线
+ROUND_REQUEST_BUDGET = 85   # 单轮请求预算硬闸（robots 1 + 7 窗口翻页），超限即中止本轮
+ABORT_FAILED_WINDOWS = 3    # 单轮内整窗扫描失败达到此数即中止剩余窗口（检查单第 4 条自动化）
 
 J_BOOKABLE = "判可订"
 J_UNBOOKABLE = "判不可订"
@@ -215,6 +222,11 @@ def scan_window(client, cfg, checkin, checkout, max_pages):
     empty_streak, pages_done = 0, 0
 
     for n in range(1, limit + 1):
+        if client.stats["total"] >= ROUND_REQUEST_BUDGET:
+            log.error("单轮请求预算 %d 已用尽，本窗口剩余页中止（宁缺毋滥）",
+                      ROUND_REQUEST_BUDGET)
+            failed_pages.append({"page": n, "http": "budget_abort"})
+            break
         url = (cfg["list_page_n"].replace("{page}", str(n))
                .replace("{d1}", checkin).replace("{d2}", checkout))
         code, html = client.get(url, referer=cfg["list_page1"])
@@ -251,7 +263,18 @@ def phase_round(cfg, client, round_name, max_pages, windows):
 
     todo = windows or list(range(1, WINDOW_COUNT + 1))
     results = {}
+    failed_windows = 0
+    aborted = None
     for w in todo:
+        if failed_windows >= ABORT_FAILED_WINDOWS:
+            log.error("已有 %d 个窗口整窗扫描失败，本轮剩余窗口中止（顺延重跑）",
+                      failed_windows)
+            aborted = "failed_windows"
+            break
+        if client.stats["total"] >= ROUND_REQUEST_BUDGET:
+            log.error("单轮请求预算 %d 已用尽，本轮剩余窗口中止", ROUND_REQUEST_BUDGET)
+            aborted = "budget"
+            break
         path = run_path(round_name, w)
         if os.path.exists(path):
             log.info("窗口%d 已存在 %s，跳过（断点续跑）", w, path)
@@ -272,9 +295,15 @@ def phase_round(cfg, client, round_name, max_pages, windows):
         write_json(path, payload)
         log.info("窗口%d 落盘 %s（seen=%d 页数=%d 失败页=%d）",
                  w, path, len(res["seen"]), res["pages_done"], len(res["failed_pages"]))
+        if res["scan_failed"]:
+            failed_windows += 1
         results[w] = {"seen": len(res["seen"]), "pages": res["pages_done"],
-                      "failed": len(res["failed_pages"])}
-    return results
+                      "failed": len(res["failed_pages"]),
+                      "scan_failed": res["scan_failed"]}
+    return {"round": round_name, "aborted": aborted,
+            "failed_windows": failed_windows,
+            "requests_total": client.stats["total"],
+            "windows": results}
 
 
 # ---------------------------------------------------------------- report

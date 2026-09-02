@@ -1,0 +1,110 @@
+name: m12-ab-check
+
+# M12 可订日历原理 A/B 验证（云端轨）：本机列表页遇验证码墙后迁移至此。
+# 手动触发；phase=ab 时先跑 A、静置 20 分钟、再跑 B，最后打印两相汇总。
+# 结果只上传 artifacts（run_a_w*.json / run_b_w*.json），不回写 data 分支。
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "轮次：a=只跑A相 b=只跑B相 ab=A+静置20分钟+B"
+        required: true
+        default: "ab"
+        type: choice
+        options: ["a", "b", "ab"]
+
+permissions:
+  contents: read # 只读代码，绝不回写任何分支
+
+jobs:
+  ab-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      TZ: Asia/Shanghai
+      REQUEST_INTERVAL: "7"   # 云端降速：7 秒间隔，宁慢勿封
+      REQUEST_TIMEOUT: "25"
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install -r crawler/requirements.txt
+
+      - name: 样本就位检查
+        run: |
+          python -c "import json; d=json.load(open('crawler/data/m12_check/sample.json',encoding='utf-8')); assert d['count']>=20, '样本不足'; print('样本', d['count'], '家就位')"
+
+      - name: A 相检索
+        if: ${{ inputs.phase == 'a' || inputs.phase == 'ab' }}
+        run: cd crawler && python m12_principle_check.py --phase a
+
+      - name: 两相静置 20 分钟（冻结口径：独立检索间隔下限）
+        if: ${{ inputs.phase == 'ab' }}
+        run: sleep 1200
+
+      - name: B 相检索
+        if: ${{ inputs.phase == 'b' || inputs.phase == 'ab' }}
+        run: cd crawler && python m12_principle_check.py --phase b
+
+      - name: 两相汇总（stdout，供日志直接查看）
+        if: always()
+        run: |
+          python - <<'PYEOF'
+          import json, os, glob
+          base = "crawler/data/m12_check"
+          sample = json.load(open(os.path.join(base, "sample.json"), encoding="utf-8"))
+          refs = [it["ref"] for it in sample["items"]]
+          print(f"===== M12 A/B 汇总 · 样本 {len(refs)} 家 × 7 窗口 =====")
+          total_req_note = []
+          for rnd in ("a", "b"):
+              files = sorted(glob.glob(os.path.join(base, f"run_{rnd}_w*.json")))
+              if not files:
+                  print(f"轮次 {rnd}: 无结果文件")
+                  continue
+              for fp in files:
+                  d = json.load(open(fp, encoding="utf-8"))
+                  seen = set(d.get("seen", []))
+                  hits = sum(1 for r in refs if r in seen)
+                  flag = "扫描失败" if d.get("scan_failed") else "ok"
+                  print(f"轮次{rnd} 窗口{ d['window_index'] } ({d.get('checkin')}): "
+                        f"seen={len(seen)} 样本命中={hits}/{len(refs)} "
+                        f"页数={d.get('pages_done')} 失败页={len(d.get('failed_pages'))} {flag}")
+          # 双轮都在时出判定矩阵计数
+          tally = {"判可订": 0, "判不可订": 0, "待确认": 0, "探测失败": 0}
+          complete = True
+          for w in range(1, 8):
+              pa = os.path.join(base, f"run_a_w{w}.json")
+              pb = os.path.join(base, f"run_b_w{w}.json")
+              ra = json.load(open(pa, encoding="utf-8")) if os.path.exists(pa) else None
+              rb = json.load(open(pb, encoding="utf-8")) if os.path.exists(pb) else None
+              for ref in refs:
+                  if ra is None or rb is None or ra.get("scan_failed") or rb.get("scan_failed"):
+                      tally["探测失败"] += 1
+                      continue
+                  ia, ib = ref in set(ra.get("seen", [])), ref in set(rb.get("seen", []))
+                  tally["判可订" if ia and ib else "判不可订" if not ia and not ib else "待确认"] += 1
+          print("判定矩阵计数:", json.dumps(tally, ensure_ascii=False))
+          print("说明：吻合率/假阳性率须待人工核对 ground_truth 后由 --phase verdict 核算。")
+          PYEOF
+
+      - name: 上传窗口结果 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m12-ab-runs
+          path: crawler/data/m12_check/run_*.json
+          if-no-files-found: warn
+
+      - name: 失败时上传运行日志
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m12-ab-logs
+          path: crawler/logs/
