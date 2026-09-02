@@ -1,128 +1,170 @@
 {
-  "selected_at": "2026-08-30T17:48:03",
+  "selected_at": "2026-09-02T12:55:37",
   "source_db": "data/muniao.db",
-  "criteria": "最近一次 snapshot_date 有 price 非空，按 last_seen 新到旧取前 N 家",
+  "criteria": "A线重取样：可见集（09-02 云端带日期检索 seen=119）∩ 在册有报价 ∩ 有评分有点评（58 家池），按区域分层配额（开发区5/金州5/西岗4/沙河口3/中山3/甘井子2/旅顺1/高新1）区域内按点评数降序取顶；替补 8 家同规则顺延。原 24 家旅顺样本因全部落在可见集外作废。",
   "count": 24,
   "items": [
     {
-      "ref": "1026001",
-      "name": "【蹉跎】洋房 春风十里园区5 独立2室 性价比好房 出游  业主沙滩丨赶海垂钩",
-      "url": "https://www.muniao.com/room/1026001.html"
+      "ref": "111862",
+      "name": "开发区万达广场 经济情侣大床房",
+      "url": "https://www.muniao.com/room/111862.html"
     },
     {
-      "ref": "1103043",
-      "name": "【团建C别墅】海边泳池别墅4层6室 结婚婚房 轰趴聚会团建KTV\\麻将近三寰牧场\\塔河湾浴场/步行三",
-      "url": "https://www.muniao.com/room/1103043.html"
+      "ref": "13791",
+      "name": "开发区万达广场 温馨4人双床房 地铁站 海边 大黑山 金石滩 北站 机场",
+      "url": "https://www.muniao.com/room/13791.html"
     },
     {
-      "ref": "1103230",
-      "name": "【聚会H别墅】海景14室900平/淘气堡亲子民宿/KTV、台球、麻将 结婚婚房 三分钟到海边 /公司",
-      "url": "https://www.muniao.com/room/1103230.html"
+      "ref": "100588",
+      "name": "金石滩发现王国快轨站地质公园蜡像馆观海房",
+      "url": "https://www.muniao.com/room/100588.html"
     },
     {
-      "ref": "1111418",
-      "name": "【塔河湾E复式】4室4卫180度海景跃层 度假婚房、三分钟到塔河湾欢乐海岸 可做",
-      "url": "https://www.muniao.com/room/1111418.html"
+      "ref": "13237",
+      "name": "开发区星级日租 温馨情侣大床房",
+      "url": "https://www.muniao.com/room/13237.html"
     },
     {
-      "ref": "1139053",
-      "name": "海鸥民宿/春风十里/可月租/可季租/可年租/私密且独立/充电停车/",
-      "url": "https://www.muniao.com/room/1139053.html"
+      "ref": "10438",
+      "name": "开发区万达广场 轻轨站附近 温馨特惠3人间",
+      "url": "https://www.muniao.com/room/10438.html"
     },
     {
-      "ref": "1139055",
-      "name": "海鸥民宿【逸秋居】春风十里/接亲/聚会/居家/烧烤/赶海/长租/",
-      "url": "https://www.muniao.com/room/1139055.html"
+      "ref": "831102",
+      "name": "茹家绿色心居/巨幅高清投影大床房/近地铁车站发现王国/自主入住隐私性强",
+      "url": "https://www.muniao.com/room/831102.html"
     },
     {
-      "ref": "1164770",
-      "name": "【蓝莹海景民宿、密悦海之家】密悦海之家与你有关，皆是浪漫。",
-      "url": "https://www.muniao.com/room/1164770.html"
+      "ref": "100590",
+      "name": "金石滩发现王国 地质公园附近三居室",
+      "url": "https://www.muniao.com/room/100590.html"
     },
     {
-      "ref": "1164790",
-      "name": "【蓝莹海景民宿、觅知】三两知己，一杯浅茶。",
-      "url": "https://www.muniao.com/room/1164790.html"
+      "ref": "28193",
+      "name": "发现王国黄金海岸附近100平两室两厅两卫住8人花园",
+      "url": "https://www.muniao.com/room/28193.html"
     },
     {
-      "ref": "1164803",
-      "name": "【蓝莹海景恋海】保持热爱，奔赴大海",
-      "url": "https://www.muniao.com/room/1164803.html"
+      "ref": "220367",
+      "name": "瑞柏中心 公主范大床房",
+      "url": "https://www.muniao.com/room/220367.html"
     },
     {
-      "ref": "1170528",
-      "name": "大连一线海、湖、山、欧式园林小区/海景房/露天阳台/大浴缸/近海/新中式/塔河湾浴场/樱花园/星海广",
-      "url": "https://www.muniao.com/room/1170528.html"
+      "ref": "37512",
+      "name": "金石滩海边发现王国100平花园洋房住10人",
+      "url": "https://www.muniao.com/room/37512.html"
     },
     {
-      "ref": "1183752",
-      "name": "海鸥民宿【法式多床】15人左右/婚房/团建/多家庭出游/麻将机/投影/视野开阔/可商拍",
-      "url": "https://www.muniao.com/room/1183752.html"
+      "ref": "69697",
+      "name": "汽车总站、市二院附近的家庭公寓三人间家庭房日租短租",
+      "url": "https://www.muniao.com/room/69697.html"
     },
     {
-      "ref": "1196390",
-      "name": "海鸥民宿【一一阁】品茶/观景/烧烤/5-6人/结婚/赶海/一张床在客厅（沙发床）",
-      "url": "https://www.muniao.com/room/1196390.html"
+      "ref": "67272",
+      "name": "大连火车站附近金宸国际--可住四人甚至更多可做饭",
+      "url": "https://www.muniao.com/room/67272.html"
     },
     {
-      "ref": "1197490",
-      "name": "千兆光纤，2米舒适大床，智能门锁，空调，洗衣机，冰箱，全天热水。周边配套设施齐全",
-      "url": "https://www.muniao.com/room/1197490.html"
+      "ref": "23347",
+      "name": "汽车客运总站附近精致公寓大床房",
+      "url": "https://www.muniao.com/room/23347.html"
     },
     {
-      "ref": "1202305",
-      "name": "塔河湾欢乐海岸对面，俯瞰整个浴场，大玻璃窗，畅览海天一色",
-      "url": "https://www.muniao.com/room/1202305.html"
+      "ref": "69693",
+      "name": "汽车总站、市二院附近大床房日租房短租房",
+      "url": "https://www.muniao.com/room/69693.html"
     },
     {
-      "ref": "1209709",
-      "name": "近老虎尾海滩独栋徽派别墅，有庭院，有露台，三室一厅一厨两卫。",
-      "url": "https://www.muniao.com/room/1209709.html"
+      "ref": "11633",
+      "name": "近大连博物馆 近星海广场 近地铁 西安路商业圈/双床适合朋友出行",
+      "url": "https://www.muniao.com/room/11633.html"
     },
     {
-      "ref": "1225796",
-      "name": "整套大宅海景别墅，私密性强，低调奢华，临近小黑石海滨浴场，荧光海，斑海豹保护区。",
-      "url": "https://www.muniao.com/room/1225796.html"
+      "ref": "34953",
+      "name": "星海朴宿，星海广场温馨复式海景双床房",
+      "url": "https://www.muniao.com/room/34953.html"
     },
     {
-      "ref": "1302314",
-      "name": "＜春风十里海边别墅＞/五居室/太阳沟/旅顺博物馆/胜利塔/适合9人入住",
-      "url": "https://www.muniao.com/room/1302314.html"
+      "ref": "57618",
+      "name": "星海公园旁海景大床房",
+      "url": "https://www.muniao.com/room/57618.html"
     },
     {
-      "ref": "1318657",
-      "name": "宿小美「和平」长租可议/和平公园海滨浴场/沉船湾/黄渤海分界线风景区/太阳沟/旅",
-      "url": "https://www.muniao.com/room/1318657.html"
+      "ref": "27155",
+      "name": "滨城★一宿/城景落地窗/温馨大床房/地铁5号线2号线/劳动公园旁/青泥洼桥商业圈",
+      "url": "https://www.muniao.com/room/27155.html"
     },
     {
-      "ref": "1339783",
-      "name": "精装三居室，可聚会，可做饭，可游戏，可麻将，近军港白玉山鸡冠山太阳沟景区。",
-      "url": "https://www.muniao.com/room/1339783.html"
+      "ref": "34799",
+      "name": "滨城★一宿/双床4人间/落地窗/地铁5号线2号线/劳动公园/青泥洼桥商业圈",
+      "url": "https://www.muniao.com/room/34799.html"
     },
     {
-      "ref": "1345228",
-      "name": "近大学温馨私享观景",
-      "url": "https://www.muniao.com/room/1345228.html"
+      "ref": "243708",
+      "name": "（可以月租长租）大连火车站附近温馨双床房",
+      "url": "https://www.muniao.com/room/243708.html"
     },
     {
-      "ref": "1345230",
-      "name": "近大学私人投影房",
-      "url": "https://www.muniao.com/room/1345230.html"
+      "ref": "196685",
+      "name": "大连高新园区恋家家庭式公寓一居室",
+      "url": "https://www.muniao.com/room/196685.html"
     },
     {
-      "ref": "1345232",
-      "name": "海景大床房",
-      "url": "https://www.muniao.com/room/1345232.html"
+      "ref": "122607",
+      "name": "免费接机 机场步行5分钟路程内B",
+      "url": "https://www.muniao.com/room/122607.html"
     },
     {
-      "ref": "1345234",
-      "name": "交大 经典投影房",
-      "url": "https://www.muniao.com/room/1345234.html"
+      "ref": "194358",
+      "name": "和平海洋公园 四居室",
+      "url": "https://www.muniao.com/room/194358.html"
     },
     {
-      "ref": "1357931",
-      "name": "【惠选别墅】可洗热水澡+洗衣机/1室一卫/2人/24小时安保/安静",
-      "url": "https://www.muniao.com/room/1357931.html"
+      "ref": "75978",
+      "name": "大连理工大学西门海事大学附近经济型大床房",
+      "url": "https://www.muniao.com/room/75978.html"
+    }
+  ],
+  "substitutes": [
+    {
+      "ref": "86970",
+      "name": "大连开发区万达广场豪华大床房",
+      "url": "https://www.muniao.com/room/86970.html"
+    },
+    {
+      "ref": "130712",
+      "name": "精品时尚情侣空间",
+      "url": "https://www.muniao.com/room/130712.html"
+    },
+    {
+      "ref": "220454",
+      "name": "瑞柏中心 假日阳光大床房",
+      "url": "https://www.muniao.com/room/220454.html"
+    },
+    {
+      "ref": "12640",
+      "name": "海滨 温泉 轻轨站附近 温馨家庭房",
+      "url": "https://www.muniao.com/room/12640.html"
+    },
+    {
+      "ref": "61320",
+      "name": "大连火车站附近 金宸国际日租房",
+      "url": "https://www.muniao.com/room/61320.html"
+    },
+    {
+      "ref": "67265",
+      "name": "火车站附近金宸国际双床房，可以接待4人入住",
+      "url": "https://www.muniao.com/room/67265.html"
+    },
+    {
+      "ref": "73174",
+      "name": "星海朴宿，星海广场高层复式海景三床六人间，可做饭",
+      "url": "https://www.muniao.com/room/73174.html"
+    },
+    {
+      "ref": "12714",
+      "name": "西安路商业街上的舒适房间 温馨大床房",
+      "url": "https://www.muniao.com/room/12714.html"
     }
   ]
 }
