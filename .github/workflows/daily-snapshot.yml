@@ -12,7 +12,7 @@ on:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150 # 主快照约 30 分钟 + 排期信号日采约 35 分钟（闸开启后），留足余量
     steps:
       - name: 拉取代码
         uses: actions/checkout@v4
@@ -47,6 +47,29 @@ jobs:
         env:
           TZ: Asia/Shanghai # 快照日期按北京时间记录
         run: python crawler/daily_snapshot.py
+
+      # M12 C 线排期信号日采（主轨）。闸：data 分支存在 paiqi_enabled.flag 才跑；
+      # 闸关闭时本步骤直接跳过，零请求。熔断（退出码 2）不阻断快照数据回传。
+      - name: 排期信号日采（闸：data 分支 paiqi_enabled.flag）
+        env:
+          TZ: Asia/Shanghai
+        continue-on-error: true
+        run: |
+          if curl -sf "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/data/paiqi_enabled.flag" -o crawler/paiqi_enabled.flag; then
+            echo "paiqi_enabled.flag 存在，启动排期信号日采（415 家，约 35 分钟）"
+            python crawler/run_paiqi_daily.py
+          else
+            echo "paiqi_enabled.flag 不存在，排期信号日采未启用，跳过"
+          fi
+
+      - name: 上传排期信号原始 JSON（闸开启且有产出时）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paiqi-raw
+          path: crawler/data/paiqi/
+          if-no-files-found: ignore
+          retention-days: 30
 
       - name: 回传数据到 data 分支（force-push 保持仓库不膨胀）
         run: |
